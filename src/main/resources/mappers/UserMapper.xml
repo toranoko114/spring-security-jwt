@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tutorial.spring.security.jwt.mapper.UserMapper">
+    <select id="findUserByUsername" resultType="UserDto">
+        SELECT user_id userId, username, password, role
+        FROM user
+        WHERE username = #{username}
+    </select>
+
+    <select id="findByUserId" resultType="UserDto">
+        SELECT user_id userId, username, PASSWORD, role
+        FROM user
+        WHERE user_id = #{userId}
+    </select>
+    
+    <insert id="save" parameterType="UserDto">
+        INSERT INTO user (username, password)
+        VALUES ( #{username}, #{password} )
+    </insert>
+</mapper>
