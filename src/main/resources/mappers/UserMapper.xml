@@ -6,18 +6,18 @@
 <mapper namespace="com.tutorial.spring.security.jwt.mapper.UserMapper">
     <select id="findUserByUsername" resultType="UserDto">
         SELECT user_id userId, username, password, role
-        FROM user
+        FROM users
         WHERE username = #{username}
     </select>
 
     <select id="findByUserId" resultType="UserDto">
         SELECT user_id userId, username, PASSWORD, role
-        FROM user
+        FROM users
         WHERE user_id = #{userId}
     </select>
     
     <insert id="save" parameterType="UserDto">
-        INSERT INTO user (username, password)
+        INSERT INTO users (username, password)
         VALUES ( #{username}, #{password} )
     </insert>
 </mapper>
