@@ -7,7 +7,7 @@ spring:
 
 logging:
   level:
-    com.bookflex: debug
+    com.tutorial: debug
 
 jwt:
   header: Authorization
