@@ -1,59 +1,50 @@
 package com.tutorial.spring.security.jwt.config.security;
 
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+
+import com.tutorial.spring.security.jwt.service.CustomUserDetailsService;
 import com.tutorial.spring.security.jwt.utils.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig {
 
   private final JwtTokenProvider jwtTokenProvider;
+  private final CustomUserDetailsService customUserDetailsService;
+  private final CustomAccessDeniedHandler customAccessDeniedHandler;
+  private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
   @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
-
-  @Bean
-  @Override
-  public AuthenticationManager authenticationManagerBean() throws Exception {
-    return super.authenticationManagerBean();
-  }
-
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    http
-        .httpBasic().disable() // 基本設定を無効にする
-        .csrf().disable() // CSRFを使用しない
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // セッションを使用しない
+  public AuthenticationManager authenticationManager(HttpSecurity http)
+      throws Exception {
+    return http.getSharedObject(AuthenticationManagerBuilder.class)
+        .userDetailsService(customUserDetailsService)
+        .passwordEncoder(bCryptPasswordEncoder)
         .and()
-        .authorizeRequests()
-        .antMatchers("/*/login", "/*/join").permitAll()
+        .build();
+  }
+
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.cors().and().csrf().disable();
+    http.sessionManagement().sessionCreationPolicy(STATELESS)
+        .and().authorizeHttpRequests().requestMatchers("/*/join", "/*/login").permitAll()
         .anyRequest().hasRole("USER")
-        .and()
-        .exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHandler())
-        .and()
-        .exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-        .and()
-        .addFilterBefore(new JwtFilter(jwtTokenProvider),
-            UsernamePasswordAuthenticationFilter.class); // ID, Password 検証前にJWTフィルタをかける
-  }
-
-  @Override
-  public void configure(WebSecurity web) throws Exception {
-    web
-        .ignoring()
-        .antMatchers("/v2/api-docs", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**",
-            "/swagger/**"); // swaggerに関するリクエストは許可
+        .and().exceptionHandling().accessDeniedHandler(customAccessDeniedHandler)
+        .authenticationEntryPoint(customAuthenticationEntryPoint)
+        .and().addFilterBefore(new JwtFilter(jwtTokenProvider),
+            UsernamePasswordAuthenticationFilter.class);
+    return http.build();
   }
 }
