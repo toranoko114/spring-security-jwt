@@ -23,8 +23,6 @@ public class UserDto implements UserDetails {
   private String password;
   private String role;
 
-
-  // 이하 코드는 security 를 위한 용도
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private Collection<? extends GrantedAuthority> authorities;
 

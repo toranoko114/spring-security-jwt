@@ -7,11 +7,11 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +50,8 @@ public class JwtTokenProvider {
     return Jwts.builder()
         .setClaims(claims)
         .setIssuedAt(now)
-        .setExpiration(new Date(now.getTime() + tokenValidMillisecond)) // 토큰 만료일 설정
-        .signWith(SignatureAlgorithm.HS256, secretKey) // 암호화
+        .setExpiration(new Date(now.getTime() + tokenValidMillisecond)) // トークン有効期限の設定
+        .signWith(SignatureAlgorithm.HS256, secretKey) // 暗号化
         .compact();
   }
 
@@ -75,7 +75,7 @@ public class JwtTokenProvider {
   public String resolveToken(HttpServletRequest request) {
     String token = request.getHeader("Authorization");
 
-    // 가져온 Authorization Header 가 문자열이고, Bearer 로 시작해야 가져옴
+    // AuthorizationがBearerで始まる
     if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
       return token.substring(7);
     }

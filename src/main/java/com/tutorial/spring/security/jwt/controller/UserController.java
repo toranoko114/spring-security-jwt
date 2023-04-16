@@ -10,14 +10,18 @@ import com.tutorial.spring.security.jwt.exception.UserNotFoundException;
 import com.tutorial.spring.security.jwt.service.ResponseService;
 import com.tutorial.spring.security.jwt.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -25,7 +29,6 @@ public class UserController {
 
     private final UserService userService;
     private final ResponseService responseService;
-    private final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/join")
     public ResponseEntity join(@RequestBody UserDto userDto) {
@@ -36,7 +39,7 @@ public class UserController {
 
             responseEntity = ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (DuplicatedUsernameException exception) {
-            logger.debug(exception.getMessage());
+            log.debug(exception.getMessage());
             BaseResponse response = responseService.getBaseResponse(false, exception.getMessage());
 
             responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -57,7 +60,7 @@ public class UserController {
 
             responseEntity = ResponseEntity.status(HttpStatus.OK).headers(httpHeaders).body(response);
         } catch (LoginFailedException exception) {
-            logger.debug(exception.getMessage());
+            log.debug(exception.getMessage());
             BaseResponse response = responseService.getBaseResponse(false, exception.getMessage());
 
             responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -77,7 +80,7 @@ public class UserController {
 
             responseEntity = ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (UserNotFoundException exception) {
-            logger.debug(exception.getMessage());
+            log.debug(exception.getMessage());
             BaseResponse response = responseService.getBaseResponse(false, exception.getMessage());
 
             responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);

@@ -9,7 +9,7 @@ import com.tutorial.spring.security.jwt.mapper.UserMapper;
 import com.tutorial.spring.security.jwt.utils.JwtTokenProvider;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +20,7 @@ public class UserService {
 
   private final UserMapper userMapper;
   private final JwtTokenProvider jwtTokenProvider;
-  private final PasswordEncoder passwordEncoder;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
   @Transactional
   public UserDto join(UserDto userDto) {
@@ -28,7 +28,7 @@ public class UserService {
       throw new DuplicatedUsernameException("ログイン済です.");
     }
 
-    userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
+    userDto.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
     userMapper.save(userDto);
 
     return userMapper.findUserByUsername(userDto.getUsername()).get();
@@ -38,7 +38,7 @@ public class UserService {
     UserDto userDto = userMapper.findUserByUsername(loginDto.getUsername())
         .orElseThrow(() -> new LoginFailedException("無効なIDです."));
 
-    if (!passwordEncoder.matches(loginDto.getPassword(), userDto.getPassword())) {
+    if (!bCryptPasswordEncoder.matches(loginDto.getPassword(), userDto.getPassword())) {
       throw new LoginFailedException("無効なパスワードです.");
     }
 
